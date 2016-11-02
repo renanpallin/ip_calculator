@@ -163,19 +163,31 @@ public class IpCalculator{
 		return (int) Math.pow(2, mask.replace("1","").length());
 	}
 
+	
+	
+	/**
+	 * TODO:
+	 * BUG MONSTROOOO!!!!
+	 * Separar os calculos por octetos.
+	 * Problema: 
+	 * 255 = 11111111
+	 * 255.255.255.255 = 11111111111111111111111111111111
+	 * 255255255255 = 11101101101110011001100001100011010111
+	 */
 	/**
 	 * Transform decimal given IP to binary IP
 	 * @param  ip [description]
 	 * @return    [description]
 	 */
-	private String decimalToBinaryIp(long ip){
-		String s = String.valueOf(ip);
+	public static String decimalToBinaryIp(long ip){
+//		String s = String.valueOf(ip);
 		/* Gambiarra para não estourar o int */
-		int firstPart = Integer.parseInt(s.substring(0, s.length() / 2));
-		int secondPart = Integer.parseInt(s.substring(s.length() / 2 ));
-		
-		return String.valueOf(Integer.toBinaryString(firstPart)) + 
-			   String.valueOf(Integer.toBinaryString(secondPart));
+//		int firstPart = Integer.parseInt(s.substring(0, s.length() / 2));
+//		int secondPart = Integer.parseInt(s.substring(s.length() / 2 ));
+//		
+//		return String.valueOf(Integer.toBinaryString(firstPart)) + 
+//			   String.valueOf(Integer.toBinaryString(secondPart));
+		return Long.toBinaryString(ip);
 	}
 	
 
