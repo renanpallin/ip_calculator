@@ -46,7 +46,7 @@ public class IP {
 	
 	
 	public static void main(String[] args) {
-		System.out.println(zerosAEsquerdaRecursivo(IpCalculator.decimalToBinaryIp(255255255255l), 32));
+//		System.out.println(zerosAEsquerdaRecursivo(IpCalculator.decimalToBinaryIp(255255255255l), 32));
 	}
 	
 	private static String zerosAEsquerdaRecursivo(String s, int tamanhoDesejado){
