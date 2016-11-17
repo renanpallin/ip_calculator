@@ -12,6 +12,14 @@ import java.util.List;
  * Encontrar broadcast, endereço de rede de um ip e sua mascara
  * Descobrir se dois IPs são de uma mesma rede
  */
+
+
+/**
+ * Todos os ips em formato String devem ser binários pontuados, de nome dotedBinaryIp
+ * Todos os ips em formato long[] devem ser decimais, onde cada membro do array guarda um octeto
+ * @author renan
+ *
+ */
 public class IpCalculator{
 
 	/**
@@ -230,36 +238,13 @@ public class IpCalculator{
 //	 }
 
 
-	/**
-	 * Calculate the number of possible subnets in given mask
-	 * @param  mask [description]
-	 * @return      [description]
-	 */
-	public int calculateNumOfSubnets(long[] mask){
-		return calculateNumOfSubnets(decimalToBinaryIp(mask));
-	}
 
-	/*
-	 * calculateNumOfSubnets Test
-	 */
-//	public static void main(String[] args) {
-//		IpCalculator ip = new IpCalculator();
-//		System.out.println(ip.calculateNumOfSubnets("111111111111111111111100000000"));
-//	}
 	
 	/**
-	 * Calculate the number of possible subnets for given mask
-	 * @param mask in binary system
+	 * 
+	 * @param binaryMask
 	 * @return
 	 */
-	public int calculateNumOfSubnets(String mask){
-		return (int) Math.pow(2, mask
-			.trim()
-			.replace(".", "")
-			.replace("1","")
-			.length()); // Testar, ver se não é replaceAll
-	}
-
 	public int calculateNumOfHosts(String binaryMask){
 		return (int) Math.pow(2, binaryMask.length() - numBytesOfMaskForSubnet(binaryMask));
 	}
@@ -322,6 +307,35 @@ public class IpCalculator{
 	
 	
 /* Funções úteis TESTADAS */
+	/* Se está descomentado abaixo desta linha, está correta */
+	
+	
+	
+	/**
+	 * Overload para aceitar binaryMask
+	 * @param mask
+	 * @return
+	 */
+	public int calculateNumOfSubnets(long[] mask){
+		return calculateNumOfSubnets(decimalToBinaryIp(mask));
+	}
+
+	/**
+	 * Calculate the number of possible subnets for given mask
+	 * @param binaryMask in binary system
+	 * @return
+	 */
+	public int calculateNumOfSubnets(String binaryMask){
+		return (int) Math.pow(2, binaryMask
+			.trim()
+			.replace(".", "")
+			.replace("1","")
+			.length()) -2; // Tira broadcast e rede do calculo
+	}
+	
+	
+	
+	
 	/**
 	 * Overload to make 8 as default desired length
 	 * @param s

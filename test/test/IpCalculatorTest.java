@@ -11,11 +11,10 @@ import control.IpCalculator;
 
 public class IpCalculatorTest {
 
-	IpCalculator ipCalculator = new IpCalculator();
+	IpCalculator ip = new IpCalculator();
 	
 	@Test
 	public void testDecimalToBinaryIp() {
-		IpCalculator ip = new IpCalculator();
 		assertEquals(ip.decimalToBinaryIp(new long[] {192, 168, 0, 1}), "11000000.10101000.00000000.00000001");
 		assertEquals(ip.decimalToBinaryIp(new long[] {175, 255, 4, 48}), "10101111.11111111.00000100.00110000");
 		assertEquals(ip.decimalToBinaryIp(new long[] {92, 0, 49, 88}), "01011100.00000000.00110001.01011000");
@@ -23,7 +22,6 @@ public class IpCalculatorTest {
 	
 	@Test
 	public void testBinaryToDecimalIp(){
-		IpCalculator ip = new IpCalculator();
 		assertTrue(Arrays.equals(ip.binaryToDecimalIp("11000000.10101000.00000000.00000001"), new long[] {192, 168, 0, 1}));
 		assertTrue(Arrays.equals(ip.binaryToDecimalIp("10101111.11111111.00000100.00110000"), new long[] {175, 255, 4, 48}));
 		assertTrue(Arrays.equals(ip.binaryToDecimalIp("01011100.00000000.00110001.01011000"), new long[] {92, 0, 49, 88}));
@@ -31,7 +29,6 @@ public class IpCalculatorTest {
 	
 	@Test
 	public void testDivideOctects(){
-		IpCalculator ip = new IpCalculator();
 		assertTrue(Arrays.equals(ip.divideOctets("192.168.4.18"), new long[] {192, 168, 4, 18}));
 		assertTrue(Arrays.equals(ip.divideOctets("174.245.9.208"),new long[] {174, 245, 9, 208}));
 	}
@@ -73,15 +70,25 @@ public class IpCalculatorTest {
 //		fail("Not yet implemented");
 //	}
 //
-//	@Test
-//	public void testCalculateNumOfSubnetsLongArray() {
-//		fail("Not yet implemented");
-//	}
-//
-//	@Test
-//	public void testCalculateNumOfSubnetsString() {
-//		fail("Not yet implemented");
-//	}
+	@Test
+	public void testCalculateNumOfSubnetsLongArray() {
+		assertEquals(ip.calculateNumOfSubnets(new long[] {255,255,255,0}), 254);
+		assertEquals(ip.calculateNumOfSubnets(new long[] {255,255,192,0}), 16382);
+		assertEquals(ip.calculateNumOfSubnets(new long[] {255,255,248,0}), 2046);
+		assertEquals(ip.calculateNumOfSubnets(new long[] {255,255,0,0}), 65534);
+		assertEquals(ip.calculateNumOfSubnets(new long[] {255,128,0,0}), 8388606);
+		assertEquals(ip.calculateNumOfSubnets(new long[] {255,0,0,0}), 16777214);
+	}
+
+	@Test
+	public void testCalculateNumOfSubnetsString() {
+		assertEquals(ip.calculateNumOfSubnets("11111111.11111111.11111111.00000000"), 254);
+		assertEquals(ip.calculateNumOfSubnets("11111111.11111111.11000000.00000000"), 16382);
+		assertEquals(ip.calculateNumOfSubnets("11111111.11111111.11111000.00000000"), 2046);
+		assertEquals(ip.calculateNumOfSubnets("11111111.11111111.00000000.00000000"), 65534);
+		assertEquals(ip.calculateNumOfSubnets("11111111.10000000.00000000.00000000"), 8388606);
+		assertEquals(ip.calculateNumOfSubnets("11111111.00000000.00000000.00000000"), 16777214);
+	}
 //
 //	@Test
 //	public void testCalculateNumOfHosts() {
