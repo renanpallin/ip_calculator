@@ -185,7 +185,7 @@ public class IpCalculator{
 	// para isto, trocar parâmetro do método pela mascara completa
 	//
 	// 
-	//TODO: MÉTODO ERRADO! CONSERTAR ************************************************************************
+	//TODO: MÉTODO TODO ERRADO! CONSERTAR ************************************************************************
 //	private IpRages calculateIpRages(int numSubnets){
 //		IpRages ipRages = new IpRages();
 //
@@ -267,75 +267,9 @@ public class IpCalculator{
 
 
 /* FUNÇÕES DE CONVERSÕES BÁSICAS - TODAS REFATORADAS! */
-	/**
-	 * REFATORADA PARA IP COMO ARRAY DE LONG
-	 * 
-	 * TODO: Zeros à esquerda no binário
-	 * Transform decimal given IP to binary IP
-	 * @param  ip [description]
-	 * @return    [description]
-	 */
-	public String decimalToBinaryIp(long[] ip){
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < ip.length; i++) {
-			String binaryOctet = Long.toBinaryString(ip[i]);
-			String binaryOctetEigthDigits = IpCalculator.zerosAEsquerdaRecursivo(binaryOctet);
-			
-			sb.append(binaryOctetEigthDigits);
-			if (i != ip.length-1) {
-				sb.append('.');
-			}
-		}
-		return sb.toString();
-	}
-	
-	public static void main(String[] args) {
-		IpCalculator ip = new IpCalculator();
-		System.out.println(ip.decimalToBinaryIp(new long[] {92, 0, 849, 788}));
-	}
 
-	
-	/**
-	 * NOVA FUNÇÃO!!
-	 *
-	 *
-	 * 
-	 * Transforma ip dado em array de long para uma string com pontos
-	 * @param  ip [description]
-	 * @return    [description]
-	 */
-	private String decimalToDotedString(long[] ip){
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < ip.length; i++) {
-			sb.append(ip[i]);
-			if (i != ip.length-1) {
-				sb.append('.');
-			}
-		}
-		return sb.toString();
-	}
-	
-	private long[] binaryToDecimalIp(String ip){
-		// TODO: lê o nome da função e faz, viado
-		return null;
-	}
 
-	/**
-	 * NOVA FUNÇÃO
-	 * Será a primeira função chamada do IP vindo da view
-	 * 
-	 * Divide os octetos dando um split no '.'
-	 * @param  ip Ip em string com pontos
-	 * @return long[] array de long
-	 */
-	private long[] divideOctets(String dotedIp){
-		String[] ipOctetsString = dotedIp.split(".");
-		long[] ipOctets = new long[ipOctetsString.length];
-		for (int i = 0; i < ipOctetsString.length; i++) {
-			ipOctets[i] = Long.parseLong(ipOctetsString[i]);
-		}
-		return ipOctets;
-	}
+
 /* END FUNÇÕES DE CONVERSÕES BÁSICAS */
 
 
@@ -354,7 +288,7 @@ public class IpCalculator{
 	 * Check if given mask is a valid one
 	 * @param  binaryMask Mask in binary way
 	 * @return boolean           [description]
-	 */
+	 **/
 //	private boolean isMaskValid(String binaryMask){
 //		/* Jeito complicado que comecei a fazer */
 //		// char[] caracteres = binaryMask.replace(".","").toCharArray();
@@ -380,7 +314,7 @@ public class IpCalculator{
 //		/* Jeito simples */
 //		// System.out.println(binaryMask.split("0").length);
 //		return binaryMask.split("0").length <= 1 && binaryMask.replace(".", "").length() == 8*4;
-//	}
+//	} 
 
 /* END - Funções de validações */
 
@@ -412,7 +346,69 @@ public class IpCalculator{
 	}
 	
 	
+	/**
+	 * Transform decimal given IP to binary IP
+	 * @param  ip [description]
+	 * @return    [description]
+	 */
+	public String decimalToBinaryIp(long[] ip){
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < ip.length; i++) {
+			String binaryOctet = Long.toBinaryString(ip[i]);
+			String binaryOctetEigthDigits = IpCalculator.zerosAEsquerdaRecursivo(binaryOctet);
+			
+			sb.append(binaryOctetEigthDigits);
+			if (i != ip.length-1) {
+				sb.append('.');
+			}
+		}
+		return sb.toString();
+	}
+	
+	/**
+	 * Receives an doted binary IP string and return a
+	 * long array with decimal IP
+	 * 
+	 * @param dotedBinaryIp
+	 * @return
+	 */
+	public long[] binaryToDecimalIp(String dotedBinaryIp){
+		String[] binaryOctets = dotedBinaryIp.trim().split("\\.");
+		long[] decimalOctets = new long[binaryOctets.length];
+		for (int i = 0; i < binaryOctets.length; i++) {
+			decimalOctets[i] = Long.parseLong(binaryOctets[i], 2);
+		}
+		return decimalOctets;
+	}
 
+	/**
+	 * Será a primeira função chamada do IP vindo da view,
+	 * transforma uma string de IP em formato decimal para
+	 * um aray de long
+	 * 
+	 * Divide os octetos dando um split no '.'
+	 * @param  ip Ip em string com pontos
+	 * @return long[] array de long
+	 */
+	public long[] divideOctets(String dotedDecimalIp){
+		String[] ipOctetsString = dotedDecimalIp.trim().split("\\.");
+		long[] ipOctets = new long[ipOctetsString.length];
+		for (int i = 0; i < ipOctetsString.length; i++) {
+			ipOctets[i] = Long.parseLong(ipOctetsString[i]);
+		}
+		return ipOctets;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 /* DumbHelper(Experimental) */
 	/**
 	 * Encontra a máscara ideal para o número de hosts desejado

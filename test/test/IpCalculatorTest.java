@@ -1,7 +1,9 @@
 package test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -18,6 +20,22 @@ public class IpCalculatorTest {
 		assertEquals(ip.decimalToBinaryIp(new long[] {175, 255, 4, 48}), "10101111.11111111.00000100.00110000");
 		assertEquals(ip.decimalToBinaryIp(new long[] {92, 0, 49, 88}), "01011100.00000000.00110001.01011000");
 	}
+	
+	@Test
+	public void testBinaryToDecimalIp(){
+		IpCalculator ip = new IpCalculator();
+		assertTrue(Arrays.equals(ip.binaryToDecimalIp("11000000.10101000.00000000.00000001"), new long[] {192, 168, 0, 1}));
+		assertTrue(Arrays.equals(ip.binaryToDecimalIp("10101111.11111111.00000100.00110000"), new long[] {175, 255, 4, 48}));
+		assertTrue(Arrays.equals(ip.binaryToDecimalIp("01011100.00000000.00110001.01011000"), new long[] {92, 0, 49, 88}));
+	}
+	
+	@Test
+	public void testDivideOctects(){
+		IpCalculator ip = new IpCalculator();
+		assertTrue(Arrays.equals(ip.divideOctets("192.168.4.18"), new long[] {192, 168, 4, 18}));
+		assertTrue(Arrays.equals(ip.divideOctets("174.245.9.208"),new long[] {174, 245, 9, 208}));
+	}
+
 	
 //	@Test
 //	public void testFindIpClassString() {
