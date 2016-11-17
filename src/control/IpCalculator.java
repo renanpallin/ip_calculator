@@ -237,6 +237,15 @@ public class IpCalculator{
 //	 	}
 //	 }
 
+	public static void main(String[] args) {
+		int x = 7;
+		int y = 1;
+		System.out.println("x: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
+		System.out.println("y: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
+		/* Este é o jeito que quero fazer para achar a melhor mascara, isto fica dentro de um while calculando o número de hosts desejados e comparando com o fornecido */
+		System.out.println(IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255 << 1),8).substring(1));
+		System.out.println(255 << 1);
+	}
 
 
 	
