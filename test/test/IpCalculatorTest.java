@@ -15,9 +15,9 @@ public class IpCalculatorTest {
 	
 	@Test
 	public void testDecimalToBinaryIp() {
-		assertEquals(ip.decimalToBinaryIp(new long[] {192, 168, 0, 1}), "11000000.10101000.00000000.00000001");
-		assertEquals(ip.decimalToBinaryIp(new long[] {175, 255, 4, 48}), "10101111.11111111.00000100.00110000");
-		assertEquals(ip.decimalToBinaryIp(new long[] {92, 0, 49, 88}), "01011100.00000000.00110001.01011000");
+		assertEquals(ip.decimalToBinaryDotedIp(new long[] {192, 168, 0, 1}), "11000000.10101000.00000000.00000001");
+		assertEquals(ip.decimalToBinaryDotedIp(new long[] {175, 255, 4, 48}), "10101111.11111111.00000100.00110000");
+		assertEquals(ip.decimalToBinaryDotedIp(new long[] {92, 0, 49, 88}), "01011100.00000000.00110001.01011000");
 	}
 	
 	@Test
@@ -89,7 +89,16 @@ public class IpCalculatorTest {
 		assertEquals(ip.calculateNumOfSubnets("11111111.10000000.00000000.00000000"), 8388606);
 		assertEquals(ip.calculateNumOfSubnets("11111111.00000000.00000000.00000000"), 16777214);
 	}
-//
+
+	@Test
+	public void testNumBytesOfMaskForSubnet(){
+		assertEquals(ip.numBytesOfMaskForSubnet("11111111.11111111.11111111.10000000"), 25);
+		assertEquals(ip.numBytesOfMaskForSubnet("11111111.11110000.00000000.00000000"), 12);
+		assertEquals(ip.numBytesOfMaskForSubnet("10000000.00000000.00000000.00000000"), 1);
+		assertEquals(ip.numBytesOfMaskForSubnet("11111111.11111111.11111111.11111100"), 30);
+		assertEquals(ip.numBytesOfMaskForSubnet("11111111.11111111.11111111.11111110"), 31);
+	}
+	
 //	@Test
 //	public void testCalculateNumOfHosts() {
 //		fail("Not yet implemented");

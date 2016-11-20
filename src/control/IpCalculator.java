@@ -213,20 +213,7 @@ public class IpCalculator{
 
 
 /* Funções de cálculo e máscaras */
-	/**
-	 * Retrun the number of bytes used for subnet in the given mask
-	 * @param  decimalMask Mask in decimal
-	 * @return bytesUsed 
-	 */
-	private int numBytesOfMaskForSubnet(long[] decimalMask){
-		String binaryMask = decimalToBinaryIp(decimalMask);
-		/* TODO: Utilizar um método que tenho para colocar 0 a esquerda */
-		return binaryMask.length() - binaryMask.replace("1", "").length();
-	}
 
-	private int numBytesOfMaskForSubnet(String binaryMask){
-		return binaryMask.length() - binaryMask.replace("1", "").length();
-	}
 /* END - Funções de cálculo e máscaras */
 
 
@@ -238,13 +225,44 @@ public class IpCalculator{
 //	 }
 
 	public static void main(String[] args) {
-		int x = 7;
-		int y = 1;
-		System.out.println("x: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
-		System.out.println("y: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
-		/* Este é o jeito que quero fazer para achar a melhor mascara, isto fica dentro de um while calculando o número de hosts desejados e comparando com o fornecido */
-		System.out.println(IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255 << 1),8).substring(1));
-		System.out.println(255 << 1);
+//		int x = 7;
+//		int y = 1;
+//		System.out.println("x: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
+//		System.out.println("y: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
+//		/* Este é o jeito que quero fazer para achar a melhor mascara, isto fica dentro de um while calculando o número de hosts desejados e comparando com o fornecido */
+//		System.out.println(IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255 << 1),8).substring(1));
+//		System.out.println(255 << 1);
+
+		IpCalculator ip = new IpCalculator();
+
+		long[] decimal = new long[] {255,255,255,0};
+		String doted = ip.decimalToBinaryDotedIp(decimal);
+		System.out.println(doted);
+		System.out.println(ip.numBytesOfMaskForSubnet(doted));
+		System.out.println(ip.numBytesOfMaskForSubnet(decimal));
+		
+		
+	}
+	
+
+	
+	
+	public static double calculaSequenciaFor(int n){
+		double soma = 0;
+		for(int i=1; i<=n; i++){
+			System.out.println((1d/i));
+			soma = soma + (1d/i);
+		}
+		return soma;
+	}
+
+	public static double calculaSequenciaWhile(int n){
+		double soma = 0;
+		while(n>0){
+			soma = soma + 1d/n;
+			n--;
+		}
+		return soma;
 	}
 
 
@@ -326,7 +344,7 @@ public class IpCalculator{
 	 * @return
 	 */
 	public int calculateNumOfSubnets(long[] mask){
-		return calculateNumOfSubnets(decimalToBinaryIp(mask));
+		return calculateNumOfSubnets(decimalToBinaryDotedIp(mask));
 	}
 
 	/**
@@ -374,7 +392,7 @@ public class IpCalculator{
 	 * @param  ip [description]
 	 * @return    [description]
 	 */
-	public String decimalToBinaryIp(long[] ip){
+	public String decimalToBinaryDotedIp(long[] ip){
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < ip.length; i++) {
 			String binaryOctet = Long.toBinaryString(ip[i]);
@@ -423,7 +441,25 @@ public class IpCalculator{
 	}
 	
 	
-	
+	/**
+	 * Overload to the long array decimal IP
+	 * Retrun the number of bytes used for subnet in the given mask
+	 * @param  decimalMask Mask in decimal
+	 * @return bytesUsed 
+	 */
+	public int numBytesOfMaskForSubnet(long[] decimalMask){
+		return numBytesOfMaskForSubnet(decimalToBinaryDotedIp(decimalMask));
+	}
+
+	/**
+	 * Retrun the number of bytes used for subnet in the given mask
+	 * @param  decimalMask Mask in decimal
+	 * @return bytesUsed 
+	 */
+	public int numBytesOfMaskForSubnet(String dotedMask){
+		String unDotedMask = dotedMask.trim().replace(".", "");
+		return unDotedMask.length() - unDotedMask.replace("1", "").length();
+	}
 	
 	
 	
