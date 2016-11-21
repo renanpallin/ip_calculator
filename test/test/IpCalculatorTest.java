@@ -92,18 +92,22 @@ public class IpCalculatorTest {
 
 	@Test
 	public void testNumBytesOfMaskForSubnet(){
-		assertEquals(ip.numBytesOfMaskForSubnet("11111111.11111111.11111111.10000000"), 25);
-		assertEquals(ip.numBytesOfMaskForSubnet("11111111.11110000.00000000.00000000"), 12);
-		assertEquals(ip.numBytesOfMaskForSubnet("10000000.00000000.00000000.00000000"), 1);
-		assertEquals(ip.numBytesOfMaskForSubnet("11111111.11111111.11111111.11111100"), 30);
-		assertEquals(ip.numBytesOfMaskForSubnet("11111111.11111111.11111111.11111110"), 31);
+		assertEquals(ip.numBitsOfMaskForSubnet("11111111.11111111.11111111.10000000"), 25);
+		assertEquals(ip.numBitsOfMaskForSubnet("11111111.11110000.00000000.00000000"), 12);
+		assertEquals(ip.numBitsOfMaskForSubnet("10000000.00000000.00000000.00000000"), 1);
+		assertEquals(ip.numBitsOfMaskForSubnet("11111111.11111111.11111111.11111100"), 30);
+		assertEquals(ip.numBitsOfMaskForSubnet("11111111.11111111.11111111.11111110"), 31);
 	}
 	
-//	@Test
-//	public void testCalculateNumOfHosts() {
-//		fail("Not yet implemented");
-//	}
-//
+	@Test
+	public void testCalculateNumOfHosts() {
+		assertEquals(ip.calculateNumOfHostsForEachSubnet("11111111.11111111.11111111.11111110"), 0);
+		assertEquals(ip.calculateNumOfHostsForEachSubnet("11111111.11111111.11111111.11111100"), 2);
+		assertEquals(ip.calculateNumOfHostsForEachSubnet("11111111.11111111.11000000.00000000"), 16382);
+		assertEquals(ip.calculateNumOfHostsForEachSubnet("11111111.11111111.00000000.00000000"), 65534);
+		assertEquals(ip.calculateNumOfHostsForEachSubnet("11111111.00000000.00000000.00000000"), 16777214);
+	}
+
 //	@Test
 //	public void testQueroXHosts() {
 //		fail("Not yet implemented");

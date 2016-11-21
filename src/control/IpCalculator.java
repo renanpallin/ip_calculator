@@ -188,27 +188,55 @@ public class IpCalculator{
 	 * @return [description]
 	 */
 	// TODO: Colocar o prefixo da subtede baseado para os ips de rage
-	// TODO: Alterar classe IpRage para long[]
 	// TODO: Resolver problema "Como colocar a máscara nesse objeto?",
 	// para isto, trocar parâmetro do método pela mascara completa
 	//
 	// 
 	//TODO: MÉTODO TODO ERRADO! CONSERTAR ************************************************************************
-//	private IpRages calculateIpRages(int numSubnets){
-//		IpRages ipRages = new IpRages();
-//
-//		int hosts = 256 / numSubnets;
-//		System.out.println(hosts);
-//		int currentStart = 1;
-//		int currentEnd = hosts - 2;
-//		while (numSubnets-- > 0){
-//		// for (int i = numSubnets; i >= 0; i--){
-//			ipRages.addRage(currentStart, currentEnd);
-//			currentStart += hosts;
-//			currentEnd += hosts;
-//		}
-//		return ipRages;
-//	}
+	private IpRages calculateIpRages(String dotedMask, String dotedBinaryIp){
+		IpRages ipRages = new IpRages();
+		ipRages.setMask(binaryToDecimalIp(dotedMask));
+
+		int numSubnets = calculateNumOfSubnets(dotedMask);
+		int hostsForEachSubnet =  calculateNumOfHostsForEachSubnet(dotedMask);
+		int numOfBitsSubnet = numBitsOfMaskForSubnet(dotedMask);
+		
+		String prefixBinaryIp = zerosAEsquerdaRecursivo(dotedBinaryIp.substring(numOfBitsSubnet));
+		long[] prefixIp = binaryToDecimalIp(prefixBinaryIp);
+		
+		
+		long[] host = {};
+		
+		long[] ip = binaryToDecimalIp(dotedBinaryIp);
+		
+		long[] currentStart = {};
+		long[] currentEnd = {};
+		
+		while (numSubnets-- > 0){
+		// for (int i = numSubnets; i >= 0; i--){
+			ipRages.addRage(currentStart, currentEnd);
+			currentStart += hosts;
+			currentEnd += hosts;
+		}
+		return ipRages;
+	}
+	
+	private IpRages calculateIpRages(int numSubnets){
+		IpRages ipRages = new IpRages();
+		
+		int hosts = 256 / numSubnets;
+		System.out.println(hosts);
+		int currentStart = 1;
+		int currentEnd = hosts - 2;
+		while (numSubnets-- > 0){
+		// for (int i = numSubnets; i >= 0; i--){
+			ipRages.addRage(currentStart, currentEnd);
+			currentStart += hosts;
+			currentEnd += hosts;
+		}
+	return ipRages;
+}
+	
 /* END - Funções de cálculo de rede */
 
 
@@ -235,46 +263,21 @@ public class IpCalculator{
 
 		IpCalculator ip = new IpCalculator();
 
-		long[] decimal = new long[] {255,255,255,0};
+		long[] decimal = new long[] {255,255,192,0};
 		String doted = ip.decimalToBinaryDotedIp(decimal);
-		System.out.println(doted);
-		System.out.println(ip.numBytesOfMaskForSubnet(doted));
-		System.out.println(ip.numBytesOfMaskForSubnet(decimal));
+//		System.out.println(doted);
+//		System.out.println(ip.numBytesOfMaskForSubnet(doted));
+//		System.out.println(ip.numBytesOfMaskForSubnet(decimal));
 		
+//		System.out.println(ip.numBytesOfMaskForSubnet(decimal));
+//		System.out.println(ip.calculateNumOfHostsForEachSubnet(doted));
+		
+		System.out.println(Math.pow(2, 24));
 		
 	}
 	
 
 	
-	
-	public static double calculaSequenciaFor(int n){
-		double soma = 0;
-		for(int i=1; i<=n; i++){
-			System.out.println((1d/i));
-			soma = soma + (1d/i);
-		}
-		return soma;
-	}
-
-	public static double calculaSequenciaWhile(int n){
-		double soma = 0;
-		while(n>0){
-			soma = soma + 1d/n;
-			n--;
-		}
-		return soma;
-	}
-
-
-	
-	/**
-	 * 
-	 * @param binaryMask
-	 * @return
-	 */
-	public int calculateNumOfHosts(String binaryMask){
-		return (int) Math.pow(2, binaryMask.length() - numBytesOfMaskForSubnet(binaryMask));
-	}
 
 
 
@@ -392,7 +395,7 @@ public class IpCalculator{
 	 * @param  ip [description]
 	 * @return    [description]
 	 */
-	public String decimalToBinaryDotedIp(long[] ip){
+	public  static String decimalToBinaryDotedIp(long[] ip){
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < ip.length; i++) {
 			String binaryOctet = Long.toBinaryString(ip[i]);
@@ -413,7 +416,7 @@ public class IpCalculator{
 	 * @param dotedBinaryIp
 	 * @return
 	 */
-	public long[] binaryToDecimalIp(String dotedBinaryIp){
+	public static long[] binaryToDecimalIp(String dotedBinaryIp){
 		String[] binaryOctets = dotedBinaryIp.trim().split("\\.");
 		long[] decimalOctets = new long[binaryOctets.length];
 		for (int i = 0; i < binaryOctets.length; i++) {
@@ -431,7 +434,7 @@ public class IpCalculator{
 	 * @param  ip Ip em string com pontos
 	 * @return long[] array de long
 	 */
-	public long[] divideOctets(String dotedDecimalIp){
+	public static long[] divideOctets(String dotedDecimalIp){
 		String[] ipOctetsString = dotedDecimalIp.trim().split("\\.");
 		long[] ipOctets = new long[ipOctetsString.length];
 		for (int i = 0; i < ipOctetsString.length; i++) {
@@ -447,8 +450,8 @@ public class IpCalculator{
 	 * @param  decimalMask Mask in decimal
 	 * @return bytesUsed 
 	 */
-	public int numBytesOfMaskForSubnet(long[] decimalMask){
-		return numBytesOfMaskForSubnet(decimalToBinaryDotedIp(decimalMask));
+	public static int numBitsOfMaskForSubnet(long[] decimalMask){
+		return numBitsOfMaskForSubnet(decimalToBinaryDotedIp(decimalMask));
 	}
 
 	/**
@@ -456,14 +459,24 @@ public class IpCalculator{
 	 * @param  decimalMask Mask in decimal
 	 * @return bytesUsed 
 	 */
-	public int numBytesOfMaskForSubnet(String dotedMask){
+	public static int numBitsOfMaskForSubnet(String dotedMask){
 		String unDotedMask = dotedMask.trim().replace(".", "");
 		return unDotedMask.length() - unDotedMask.replace("1", "").length();
 	}
 	
 	
 	
-	
+	/**
+	 * Calcula o número de hosts suportados para uma máscara
+	 * @param dotedMask
+	 * @return
+	 */
+	public static int calculateNumOfHostsForEachSubnet(String dotedMask){
+		String unDotedMask = dotedMask.trim().replace(".", "");
+		return (int) Math.pow(2, unDotedMask.length() - 
+				numBitsOfMaskForSubnet(dotedMask)) -2; // Broadcast e Rede
+	}
+
 	
 	
 	
