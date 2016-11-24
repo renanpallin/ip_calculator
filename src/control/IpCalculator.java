@@ -254,18 +254,20 @@ public class IpCalculator{
 	//
 	// 
 	//TODO: MÉTODO TODO ERRADO! CONSERTAR ************************************************************************
-	private String calculateIpRages(long[] ipNet, long[] mask){
+	private String calculateIpRages(long[] ipNet, long[] mask, int numDesiredSubnets, int numDesiredHosts){
 		IpRages ipRages = new IpRages();
 		ipRages.setMask(mask);
 
 		char ipClass = IpCalculator.findIpClass(ipNet);
 		long[] defaultMask = IpCalculator.getDefaultMask(ipClass);
 		
-		
-		int bitsForNet = IpCalculator.numBitsOfMaskForSubnet(defaultMask);
+		// Não preciso mais da quantidade de bits para net, uma vez que somo depois pra pegar o prefixo total
+		// int bitsForNet = IpCalculator.numBitsOfMaskForSubnet(defaultMask);
 		/* Pega a diferença entre o usado para rede do totao, resultando  o usado para rede */
-		int bitsForSubnet = ;
-		
+		int bitsForSubnet = getNumOfBitsForSubnet(numDesiredSubnets);
+		int bitsForHosts = getNumOfBitsForHost(numDesiredHosts);
+
+		int bitsNetPrefix = 32 - (bitsForSubnet + bitsForHosts);
 		
 		/**
 		 * TODO
@@ -278,36 +280,73 @@ public class IpCalculator{
 		 *  2. n de bits para hosts (este vai para o final
 		 *  3. total de bits para prefixo = 32 - (passo1 + passo2)
 		 */
-		
-		
-		
-		
-		
-		
+
 		
 		/* todos os bits que não são hosts */
-		int numBitsOfPrefixNet = bitsForNet + bitsForSubnet;
+		// int numBitsOfPrefixNet = bitsForNet + bitsForSubnet;
 		
 		int numOfSubnets = (int) Math.pow(2, bitsForSubnet);
 		
-		long[] prefixNet = new long[4];
+		// long[] prefixNet = new long[4];
 		
-		char[] binaryNet = decimalToBinaryDotedIp(ipNet).replace("\\.", "").toCharArray();
+		// Aqui podemos substituir o char[] e o while por uma String e utilizar substring (tira) OU 
+		// por um StrinBuffer, limitando o tamanho dela para o bitsNetPrefix
+		char[] binaryNet = decimalToBinaryDotedIp(ipNet).trim().replace("\\.", "").toCharArray();
 		
-		StringBuffer prefixBinaryNet = new StringBuffer();
-		int numFullOctets = getNumberOfOctetcsFullInDefaltMask(ipClass);
+		StringBuilder prefixBinaryNet = new StringBuilder();
+		// int numFullOctets = getNumberOfOctetcsFullInDefaltMask(ipClass);
 
 		int i = 0;
-		while(prefixBinaryNet.length() < numBitsOfPrefixNet){
+		while(prefixBinaryNet.length() <= bitsNetPrefix){
 			prefixBinaryNet.append(binaryNet[i]);
 			i++;
 		}
+
+		/* Passando o prefixo para uma String final, para não ser alterada */
+		final String binaryPrefix = prefixBinaryNet.toString();
+		// Neste ponto temos o prefixo no tamanho correto e conehcemos os bits que usaremos para net e hosts.
+		// Agora podemos calcular os hosts e colocar o início e o fim nos hosts.
 		
+		/* Encontramos o número da maior subrede, para podermos iterar transformando em binário e colocando na currentSubnet */
+		StringBuilder justToFindMaxSubnet = new StringBuilder();
+		int maxSubnet;
+		while(justToFindMaxSubnet.length() < bitsForSubnet){
+			justToFindMaxSubnet.append('1');
+		}
+
+		maxSubnet = Integer.parseInt(justToFindMaxSubnet.toString());
+
+
+		StringBuilder currentIpNet = new StringBuilder();
+		StringBuilder currentBroadcast = new StringBuilder();
+
+		int currentNumberSubnet = 0;
+		while(currentNumberSubnet <= maxSubnet){
+			// Unimos a Rede com a Subrede - Faltam os hosts
+			currentIpNet.append(binaryPrefix); // Prefixo de rede
+			currentIpNet.append(zerosAEsquerdaRecursivo(Integer.toBinaryString(currentNumberSubnet), bitsForSubnet)); // Subrede atual com zeros a esquerda
+
+			String start = currentIpNet.toString() + zerosAEsquerdaRecursivo("0", bitsForHosts); // Primeiro host
+			String end = currentIpNet.toString() + zerosAEsquerdaRecursivo("1", bitsForHosts); // Ultimo host
+
+			String dotedStart = putDotsInBinaryUndotedIp(start);
+			String dotedEnd = putDotsInBinaryUndotedIp(end);
+
+			// TODO - PROBLEMA
+			// Aqui temos uma string SEM PONTO, precisamos coloar pontos, 
+			// chamar o getOctets para então adicionar
+			
+			// Adicionar na lista
+			ipRages.addRage(divideOctets(dotedStart), divideOctets(dotedEnd));
+			currentIpNet = new StringBuilder();
+			currentBroadcast = new StringBuilder();
+		}
+
 		return String.valueOf(prefixBinaryNet.length());
 		
 		
 //		JEITO COMPLICADO, COM WHILE JÁ FIZ COMPLETO
-//		/* Iteração para pegar o prefixo binário de rede na StringBuffer */
+//		/* Iteração para pegar o prefixo binário de rede na StringBuilder */
 //		for (int i = 0; i < prefixNet.length; i++){
 //			if(i >= numFullOctets)
 //				break;
@@ -344,6 +383,47 @@ public class IpCalculator{
 //		}
 //		return ipRages;
 	}
+	
+	
+	
+	
+	private static int getNumOfBitsForSubnet(int numDesiredSubnets){
+		int i = 0;
+		while((((int) Math.pow(2, i))-2) < numDesiredSubnets) // -2 (broadcast e subnet)
+			i++;
+		// TODO: Tentar colocar uma linha só, tudo dentro do while com i++
+
+		return i;
+	}
+
+	private static int getNumOfBitsForHost(int numDesiredHosts){
+		int i = 1;
+		while(((int) Math.pow(2, i)) < numDesiredHosts)
+			i++;
+		// TODO: Tentar colocar uma linha só, tudo dentro do while com i++
+
+		return i;
+	}
+
+	/**
+	 * Separa os octetos com pontos para uma string com 32 números binários sem pontos
+	 * @param  undotedIp [description]
+	 * @return           [description]
+	 */
+	private static String putDotsInBinaryUndotedIp(String undotedIp){
+		int start = 0;
+		int end = 8;
+		StringBuilder dotedIp = new StringBuilder();
+		while(end <= undotedIp.length()){
+			dotedIp.append(undotedIp.substring(start, end));
+			if(end != undotedIp.length())
+				dotedIp.append(".");
+			start += 8;
+			end += 8;
+		}
+		return dotedIp.toString();
+	}
+
 	
 //	private IpRages calculateIpRages(int numSubnets){
 //		IpRages ipRages = new IpRages();
