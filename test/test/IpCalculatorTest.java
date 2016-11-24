@@ -38,12 +38,42 @@ public class IpCalculatorTest {
 //	public void testFindIpClassString() {
 //		fail("Not yet implemented");
 //	}
-//	
-//	@Test
-//	public void testFindIpClassLongArray() {
-//		fail("Not yet implemented");
-//	}
-//
+	
+	@Test
+	public void testFindIpClassLongArray() {
+		/* Testes de fronteira */
+		assertEquals(ip.findIpClass(new long[] {1,5,13,112}), 'A');
+		assertEquals(ip.findIpClass(new long[] {40,5,13,112}), 'A');
+		assertEquals(ip.findIpClass(new long[] {126,5,13,112}), 'A');
+
+		assertEquals(ip.findIpClass(new long[] {128,4,6,12}), 'B');
+		assertEquals(ip.findIpClass(new long[] {191,4,6,12}), 'B');
+
+		assertEquals(ip.findIpClass(new long[] {192,4,6,12}), 'C');
+		assertEquals(ip.findIpClass(new long[] {223,4,6,12}), 'C');
+
+		assertEquals(ip.findIpClass(new long[] {224,5,6,12}), 'D');
+		assertEquals(ip.findIpClass(new long[] {239,4,6,12}), 'D');
+
+		assertEquals(ip.findIpClass(new long[] {240,4,6,12}), 'E');
+		assertEquals(ip.findIpClass(new long[] {255,4,6,12}), 'E');
+		
+		/* IPs reservados */
+		assertEquals(ip.findIpClass(new long[] {10,4,6,12}), '0');
+		assertEquals(ip.findIpClass(new long[] {127,4,6,12}), '0');
+	}
+
+	
+	@Test
+	public void testGetDefaultMask() {
+		assertTrue(Arrays.equals(IpCalculator.getDefaultMask('A'), new long[] {255, 0, 0, 0}));
+		assertTrue(Arrays.equals(IpCalculator.getDefaultMask('B'), new long[] {255, 255, 0, 0}));
+		assertTrue(Arrays.equals(IpCalculator.getDefaultMask('C'), new long[] {255, 255, 255, 0}));
+		assertTrue(Arrays.equals(IpCalculator.getDefaultMask('D'), new long[] {0, 0, 0, 0}));
+		assertTrue(Arrays.equals(IpCalculator.getDefaultMask('E'), new long[] {0, 0, 0, 0}));
+	}
+	
+
 //	@Test
 //	public void testCalculateBroadcastIp() {
 ////		assertEquals("Broadcast: ", ipCalculator.calculateBroadcastIp("143.116.158.164", "255.255.255.240"), "143.116.158.175"); // questão 4 Exercícios IP

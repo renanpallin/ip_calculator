@@ -115,29 +115,74 @@ public class IpCalculator{
 
 /*  Funções de cálculo de rede */
 	/**
+	 * Overload to findIpClass(long[])
+	 * 
 	 * Find the IP class of given IP 
 	 * @param ip in decimal system
 	 * @return the IP class or a char with 0 if an error occurs
 	 */
-//	public char findIpClass(String dotedIp){
-//		return findIpClass(divideOctets(dotedIp));
-//	}
+	public char findIpClass(String dotedIp){
+		return findIpClass(divideOctets(dotedIp));
+	}
 
-//	public char findIpClass(long[] ip){
-//		long firstOctect = ip[0];
-//		if (firstOctect <= 127)
-//			return 'A';
-//		else if (firstOctect <= 191)
-//			return 'B'; 
-//		else if (firstOctect <= 239)
-//			return 'C';
-//		else if (firstOctect <= 239)
-//			return 'D';
-//		else if (firstOctect <= 254)
-//			return 'E';
-//		else
-//			return '0'; // or throw new IllegalArgumentExcepton();
-//	}
+	/**
+	 * Find the IP class of given IP 
+	 * @param ip in decimal system
+	 * @return the IP class or a char with 0 if an error occurs
+	 */
+	public char findIpClass(long[] ip){
+		long firstOctect = ip[0];
+		// Tira IPs reservados, 10 e 127
+		if(firstOctect == 127 ||
+		   firstOctect == 10 ){
+			return '0';
+		}
+	
+		if (firstOctect < 127)
+			return 'A';
+		else if (firstOctect <= 191)
+			return 'B'; 
+		else if (firstOctect <= 223)
+			return 'C';
+		else if (firstOctect <= 239)
+			return 'D';
+		else if (firstOctect <= 255)
+			return 'E';
+		else
+			return '0'; // or throw new IllegalArgumentExcepton();
+	}
+	
+	/**
+	 * Retorna a máscara padrão para a classe de IP recebida
+	 * @param ipClass
+	 * @return
+	 */
+	public static long[] getDefaultMask(char ipClass){
+		// O findIpClass retorna o char 0 caso seja um IP reservado
+		// ou tenha algum erro
+		if(ipClass == '0')
+			return null;
+		
+		int numOctectsFull = 0;
+		long[] defaultMask = new long[4];
+		
+		if(ipClass == 'A'){
+			numOctectsFull = 1;
+		} else if(ipClass == 'B'){
+			numOctectsFull = 2;
+		} else if(ipClass == 'C'){
+			numOctectsFull = 3;
+		}
+		
+		for(int i = 0; i < defaultMask.length; i++){
+			if(i < numOctectsFull)
+				defaultMask[i] = 255;
+			else
+				defaultMask[i] = 0;
+		}
+		
+		return defaultMask;
+	}
 
 	/**
 	 * Calculate the broadcast IP address for given IP and Mask
@@ -272,7 +317,34 @@ public class IpCalculator{
 //		System.out.println(ip.numBytesOfMaskForSubnet(decimal));
 //		System.out.println(ip.calculateNumOfHostsForEachSubnet(doted));
 		
-		System.out.println(Math.pow(2, 24));
+//		System.out.println(Math.pow(2, 24));
+		
+		/**
+		 * "BUG" do java encontrado
+		 * de eu somar com o caractere . ('.'),
+		 * ele soma o valor int ao long... fudendo tudo
+		 * UTILIZE STRING . 
+		 */
+		for(long l: ip.getDefaultMask('A')){
+			System.out.print(l + ".");
+		}
+		System.out.println();
+		for(long l: ip.getDefaultMask('B')){
+			System.out.print(l + ".");
+		}
+		System.out.println();
+		for(long l: ip.getDefaultMask('C')){
+			System.out.print(l + ".");
+		}
+		System.out.println();
+		for(long l: ip.getDefaultMask('D')){
+			System.out.print(l + ".");
+		}
+		System.out.println();
+		for(long l: ip.getDefaultMask('E')){
+			System.out.print(l + ".");
+		}
+		System.out.println();
 		
 	}
 	
