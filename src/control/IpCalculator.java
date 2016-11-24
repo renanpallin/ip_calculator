@@ -272,6 +272,11 @@ public class IpCalculator{
 		 * Este método precisa saber quantos bits serão utilizados pra a subnet...
 		 * Assim, teremos o numero de bits do prefixo total para utilizarem numBitsOfPrefixNet
 		 *  
+		 *  
+		 *  REsoluçao:
+		 *  1. n de bits para rede (da máscara padrão), vai para o começo
+		 *  2. n de bits para hosts (este vai para o final
+		 *  3. total de bits para prefixo = 32 - (passo1 + passo2)
 		 */
 		
 		
