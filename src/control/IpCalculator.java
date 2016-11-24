@@ -121,7 +121,7 @@ public class IpCalculator{
 	 * @param ip in decimal system
 	 * @return the IP class or a char with 0 if an error occurs
 	 */
-	public char findIpClass(String dotedIp){
+	public static char findIpClass(String dotedIp){
 		return findIpClass(divideOctets(dotedIp));
 	}
 
@@ -130,7 +130,7 @@ public class IpCalculator{
 	 * @param ip in decimal system
 	 * @return the IP class or a char with 0 if an error occurs
 	 */
-	public char findIpClass(long[] ip){
+	public static char findIpClass(long[] ip){
 		long firstOctect = ip[0];
 		// Tira IPs reservados, 10 e 127
 		if(firstOctect == 127 ||
@@ -163,17 +163,9 @@ public class IpCalculator{
 		if(ipClass == '0')
 			return null;
 		
-		int numOctectsFull = 0;
+		int numOctectsFull = getNumberOfOctetcsFullInDefaltMask(ipClass);
 		long[] defaultMask = new long[4];
-		
-		if(ipClass == 'A'){
-			numOctectsFull = 1;
-		} else if(ipClass == 'B'){
-			numOctectsFull = 2;
-		} else if(ipClass == 'C'){
-			numOctectsFull = 3;
-		}
-		
+	
 		for(int i = 0; i < defaultMask.length; i++){
 			if(i < numOctectsFull)
 				defaultMask[i] = 255;
@@ -182,6 +174,30 @@ public class IpCalculator{
 		}
 		
 		return defaultMask;
+	}
+	
+	/**
+	 * Retorna o número de octetos com o valor 255 de uma máscara 
+	 * padrão para uma classe recebida
+	 * @return
+	 */
+	public static int getNumberOfOctetcsFullInDefaltMask(char ipClass){
+		// O findIpClass retorna o char 0 caso seja um IP reservado
+		// ou tenha algum erro
+		if(ipClass == '0')
+			return 0;
+		
+		int numOctectsFull = 0;
+		
+		if(ipClass == 'A'){
+			numOctectsFull = 1;
+		} else if(ipClass == 'B'){
+			numOctectsFull = 2;
+		} else if(ipClass == 'C'){
+			numOctectsFull = 3;
+		}
+
+		return numOctectsFull;
 	}
 
 	/**
@@ -238,49 +254,127 @@ public class IpCalculator{
 	//
 	// 
 	//TODO: MÉTODO TODO ERRADO! CONSERTAR ************************************************************************
-	private IpRages calculateIpRages(String dotedMask, String dotedBinaryIp){
+	private String calculateIpRages(long[] ipNet, long[] mask){
 		IpRages ipRages = new IpRages();
-		ipRages.setMask(binaryToDecimalIp(dotedMask));
+		ipRages.setMask(mask);
 
-		int numSubnets = calculateNumOfSubnets(dotedMask);
-		int hostsForEachSubnet =  calculateNumOfHostsForEachSubnet(dotedMask);
-		int numOfBitsSubnet = numBitsOfMaskForSubnet(dotedMask);
-		
-		String prefixBinaryIp = zerosAEsquerdaRecursivo(dotedBinaryIp.substring(numOfBitsSubnet));
-		long[] prefixIp = binaryToDecimalIp(prefixBinaryIp);
+		char ipClass = IpCalculator.findIpClass(ipNet);
+		long[] defaultMask = IpCalculator.getDefaultMask(ipClass);
 		
 		
-		long[] host = {};
+		int bitsForNet = IpCalculator.numBitsOfMaskForSubnet(defaultMask);
+		/* Pega a diferença entre o usado para rede do totao, resultando  o usado para rede */
+		int bitsForSubnet = ;
 		
-		long[] ip = binaryToDecimalIp(dotedBinaryIp);
 		
-		long[] currentStart = {};
-		long[] currentEnd = {};
+		/**
+		 * TODO
+		 * Este método precisa saber quantos bits serão utilizados pra a subnet...
+		 * Assim, teremos o numero de bits do prefixo total para utilizarem numBitsOfPrefixNet
+		 *  
+		 */
 		
-		while (numSubnets-- > 0){
-		// for (int i = numSubnets; i >= 0; i--){
-			ipRages.addRage(currentStart, currentEnd);
-			currentStart += hosts;
-			currentEnd += hosts;
+		
+		
+		
+		
+		
+		
+		/* todos os bits que não são hosts */
+		int numBitsOfPrefixNet = bitsForNet + bitsForSubnet;
+		
+		int numOfSubnets = (int) Math.pow(2, bitsForSubnet);
+		
+		long[] prefixNet = new long[4];
+		
+		char[] binaryNet = decimalToBinaryDotedIp(ipNet).replace("\\.", "").toCharArray();
+		
+		StringBuffer prefixBinaryNet = new StringBuffer();
+		int numFullOctets = getNumberOfOctetcsFullInDefaltMask(ipClass);
+
+		int i = 0;
+		while(prefixBinaryNet.length() < numBitsOfPrefixNet){
+			prefixBinaryNet.append(binaryNet[i]);
+			i++;
 		}
-		return ipRages;
+		
+		return String.valueOf(prefixBinaryNet.length());
+		
+		
+//		JEITO COMPLICADO, COM WHILE JÁ FIZ COMPLETO
+//		/* Iteração para pegar o prefixo binário de rede na StringBuffer */
+//		for (int i = 0; i < prefixNet.length; i++){
+//			if(i >= numFullOctets)
+//				break;
+//				
+//			prefixNet[i] = ipNet[i] & defaultMask[i];
+//			prefixBinaryNet.append(Long.toBinaryString(prefixNet[i]));
+//		}
+		
+		
+//		String currentSubnet = "";
+//		
+//		
+//		
+////		int numSubnets = calculateNumOfSubnets(mask);
+////		int hostsForEachSubnet =  calculateNumOfHostsForEachSubnet(dotedMask);
+////		int numOfBitsSubnet = numBitsOfMaskForSubnet(dotedMask);
+//		
+//		String prefixBinaryIp = zerosAEsquerdaRecursivo(dotedBinaryIp.substring(numOfBitsSubnet));
+//		long[] prefixIp = binaryToDecimalIp(prefixBinaryIp);
+//		
+//		
+//		long[] host = {};
+//		
+//		long[] ip = binaryToDecimalIp(dotedBinaryIp);
+//		
+//		long[] currentStart = {};
+//		long[] currentEnd = {};
+//		
+//		while (numSubnets-- > 0){
+//		// for (int i = numSubnets; i >= 0; i--){
+//			ipRages.addRage(currentStart, currentEnd);
+//			currentStart += hosts;
+//			currentEnd += hosts;
+//		}
+//		return ipRages;
 	}
 	
-	private IpRages calculateIpRages(int numSubnets){
-		IpRages ipRages = new IpRages();
+//	private IpRages calculateIpRages(int numSubnets){
+//		IpRages ipRages = new IpRages();
+//		
+//		int hosts = 256 / numSubnets;
+//		System.out.println(hosts);
+//		int currentStart = 1;
+//		int currentEnd = hosts - 2;
+//		while (numSubnets-- > 0){
+//		// for (int i = numSubnets; i >= 0; i--){
+//			ipRages.addRage(currentStart, currentEnd);
+//			currentStart += hosts;
+//			currentEnd += hosts;
+//		}
+//		return ipRages;
+//	}
+	
+	public static void main(String[] args) {
+		IpCalculator ip = new IpCalculator();
 		
-		int hosts = 256 / numSubnets;
-		System.out.println(hosts);
-		int currentStart = 1;
-		int currentEnd = hosts - 2;
-		while (numSubnets-- > 0){
-		// for (int i = numSubnets; i >= 0; i--){
-			ipRages.addRage(currentStart, currentEnd);
-			currentStart += hosts;
-			currentEnd += hosts;
-		}
-	return ipRages;
-}
+		long[] ipNet = {191,110,38,0};
+		long[] mask = {255,255,254,0};
+//		System.out.println(ip.calculateIpRages(ipNet, mask));
+		
+		long[] prefixNet = new long[4];
+//		String binaryNet = decimalToBinaryDotedIp(ipNet).replace("\\.", "");
+		
+		System.out.println(new IpCalculator().calculateIpRages(ipNet, mask));
+		
+		
+//		for (int i = 0; i < prefixNet.length; i++){
+//			prefixNet[i] = ipNet[i] & mask[i];
+//			System.out.println(prefixNet[i]);
+//		}
+		
+	}
 	
 /* END - Funções de cálculo de rede */
 
@@ -297,56 +391,56 @@ public class IpCalculator{
 //	 	}
 //	 }
 
-	public static void main(String[] args) {
-//		int x = 7;
-//		int y = 1;
-//		System.out.println("x: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
-//		System.out.println("y: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
-//		/* Este é o jeito que quero fazer para achar a melhor mascara, isto fica dentro de um while calculando o número de hosts desejados e comparando com o fornecido */
-//		System.out.println(IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255 << 1),8).substring(1));
-//		System.out.println(255 << 1);
-
-		IpCalculator ip = new IpCalculator();
-
-		long[] decimal = new long[] {255,255,192,0};
-		String doted = ip.decimalToBinaryDotedIp(decimal);
-//		System.out.println(doted);
-//		System.out.println(ip.numBytesOfMaskForSubnet(doted));
-//		System.out.println(ip.numBytesOfMaskForSubnet(decimal));
-		
-//		System.out.println(ip.numBytesOfMaskForSubnet(decimal));
-//		System.out.println(ip.calculateNumOfHostsForEachSubnet(doted));
-		
-//		System.out.println(Math.pow(2, 24));
-		
-		/**
-		 * "BUG" do java encontrado
-		 * de eu somar com o caractere . ('.'),
-		 * ele soma o valor int ao long... fudendo tudo
-		 * UTILIZE STRING . 
-		 */
-		for(long l: ip.getDefaultMask('A')){
-			System.out.print(l + ".");
-		}
-		System.out.println();
-		for(long l: ip.getDefaultMask('B')){
-			System.out.print(l + ".");
-		}
-		System.out.println();
-		for(long l: ip.getDefaultMask('C')){
-			System.out.print(l + ".");
-		}
-		System.out.println();
-		for(long l: ip.getDefaultMask('D')){
-			System.out.print(l + ".");
-		}
-		System.out.println();
-		for(long l: ip.getDefaultMask('E')){
-			System.out.print(l + ".");
-		}
-		System.out.println();
-		
-	}
+//	public static void main(String[] args) {
+////		int x = 7;
+////		int y = 1;
+////		System.out.println("x: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
+////		System.out.println("y: " + IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255),3));
+////		/* Este é o jeito que quero fazer para achar a melhor mascara, isto fica dentro de um while calculando o número de hosts desejados e comparando com o fornecido */
+////		System.out.println(IpCalculator.zerosAEsquerdaRecursivo(Integer.toBinaryString(255 << 1),8).substring(1));
+////		System.out.println(255 << 1);
+//
+//		IpCalculator ip = new IpCalculator();
+//
+//		long[] decimal = new long[] {255,255,192,0};
+//		String doted = ip.decimalToBinaryDotedIp(decimal);
+////		System.out.println(doted);
+////		System.out.println(ip.numBytesOfMaskForSubnet(doted));
+////		System.out.println(ip.numBytesOfMaskForSubnet(decimal));
+//		
+////		System.out.println(ip.numBytesOfMaskForSubnet(decimal));
+////		System.out.println(ip.calculateNumOfHostsForEachSubnet(doted));
+//		
+////		System.out.println(Math.pow(2, 24));
+//		
+////		/**
+////		 * "BUG" do java encontrado
+////		 * de eu somar com o caractere . ('.'),
+////		 * ele soma o valor int ao long... fudendo tudo
+////		 * UTILIZE STRING . 
+////		 */
+////		for(long l: ip.getDefaultMask('A')){
+////			System.out.print(l + ".");
+////		}
+////		System.out.println();
+////		for(long l: ip.getDefaultMask('B')){
+////			System.out.print(l + ".");
+////		}
+////		System.out.println();
+////		for(long l: ip.getDefaultMask('C')){
+////			System.out.print(l + ".");
+////		}
+////		System.out.println();
+////		for(long l: ip.getDefaultMask('D')){
+////			System.out.print(l + ".");
+////		}
+////		System.out.println();
+////		for(long l: ip.getDefaultMask('E')){
+////			System.out.print(l + ".");
+////		}
+////		System.out.println();
+////		
+//	}
 	
 
 	
