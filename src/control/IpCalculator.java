@@ -1,6 +1,7 @@
 package control;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -23,7 +24,12 @@ import java.util.List;
 public class IpCalculator{
 
 	/**
-	 * Case seja necessário guardar a máscara
+	 * Classe que representa todos os rages de IP, do primeiro ao fim de cada subrede
+	 * NÃO registra hosts, registra IP de rede 
+	 * e de Broadcast.
+	 * Para primiero e último host, usar métodos
+	 * getFirstAndLastHosts
+	 * 
 	 */
 	class IpRages{
 		private List<IpRage> rages;
@@ -46,6 +52,20 @@ public class IpCalculator{
 			getRages().add(ipRage);
 		}
 		
+		/**
+		 * Monta e devolve uma lista de IpRage onde start é o primeiro host
+		 * e end é o último host da subrede
+		 * @return
+		 */
+		public IpRages getFirstAndLastHosts(){
+			IpRages ipRages = new IpRages();
+			
+			for(IpRage rage: rages)
+				ipRages.addRage(rage.getFirstHost(), rage.getLastHost());
+			
+			return ipRages;
+		}
+		
 		public List<IpRage> getRages() {
 			return rages;
 		}
@@ -62,7 +82,26 @@ public class IpCalculator{
 			this.mask = mask;
 		}
 
-
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("IpRages | Mask: ");
+			
+			String ponto = "";
+			for(long l: mask){
+				sb.append(ponto);
+				sb.append(l);
+				ponto = ".";
+			}
+			
+			sb.append('\n');
+			
+			for(IpRage rage: rages)
+				sb.append(rage + "\n");
+			
+			return sb.toString();
+		}
+		
 
 		/**
 		 * Represents an rage of Ip for an submask
@@ -76,6 +115,18 @@ public class IpCalculator{
 				this.end = end;
 			}
 
+			public long[] getFirstHost(){
+				long[] firstHost = start.clone();
+				firstHost[firstHost.length-1]++;
+				return firstHost;
+			}
+			
+			public long[] getLastHost(){
+				long[] lastHost = end.clone();
+				lastHost[lastHost.length-1]--;
+				return lastHost;
+			}
+			
 			public long[] getStart(){
 				return start;
 			}
@@ -105,7 +156,27 @@ public class IpCalculator{
 
 			@Override
 			public String toString(){
-				return "Ip rage: " + start + " ~ " + end;
+				StringBuilder sb = new StringBuilder();
+				
+				// Técnica para não colocar pontos no último octeto
+				String ponto = "";
+				for(long l: start){
+					sb.append(ponto);
+					sb.append(l);
+					ponto = ".";
+				}
+				
+				sb.append(" ~ ");
+				
+				// Maneira tradicional de impedir ponto on último octeto
+				for(int i=0; i< end.length; i++){
+					sb.append(end[i]);
+					if(i != end.length -1)
+						sb.append('.');
+				}
+				
+				return sb.toString();
+//				return "Ip rage: " + Arrays.toString(start) + " ~ " + Arrays.toString(end);
 			}
 		}
 	}
@@ -254,12 +325,12 @@ public class IpCalculator{
 	//
 	// 
 	//TODO: MÉTODO TODO ERRADO! CONSERTAR ************************************************************************
-	private String calculateIpRages(long[] ipNet, long[] mask, int numDesiredSubnets, int numDesiredHosts){
+	private IpRages calculateIpRages(long[] ipNet, long[] mask, int numDesiredSubnets, int numDesiredHosts){
 		IpRages ipRages = new IpRages();
 		ipRages.setMask(mask);
 
-		char ipClass = IpCalculator.findIpClass(ipNet);
-		long[] defaultMask = IpCalculator.getDefaultMask(ipClass);
+//		char ipClass = IpCalculator.findIpClass(ipNet);
+//		long[] defaultMask = IpCalculator.getDefaultMask(ipClass);
 		
 		// Não preciso mais da quantidade de bits para net, uma vez que somo depois pra pegar o prefixo total
 		// int bitsForNet = IpCalculator.numBitsOfMaskForSubnet(defaultMask);
@@ -269,18 +340,6 @@ public class IpCalculator{
 
 		int bitsNetPrefix = 32 - (bitsForSubnet + bitsForHosts);
 		
-		/**
-		 * TODO
-		 * Este método precisa saber quantos bits serão utilizados pra a subnet...
-		 * Assim, teremos o numero de bits do prefixo total para utilizarem numBitsOfPrefixNet
-		 *  
-		 *  
-		 *  REsoluçao:
-		 *  1. n de bits para rede (da máscara padrão), vai para o começo
-		 *  2. n de bits para hosts (este vai para o final
-		 *  3. total de bits para prefixo = 32 - (passo1 + passo2)
-		 */
-
 		
 		/* todos os bits que não são hosts */
 		// int numBitsOfPrefixNet = bitsForNet + bitsForSubnet;
@@ -291,7 +350,7 @@ public class IpCalculator{
 		
 		// Aqui podemos substituir o char[] e o while por uma String e utilizar substring (tira) OU 
 		// por um StrinBuffer, limitando o tamanho dela para o bitsNetPrefix
-		char[] binaryNet = decimalToBinaryDotedIp(ipNet).trim().replace("\\.", "").toCharArray();
+		char[] binaryNet = decimalToBinaryDotedIp(ipNet).trim().replaceAll(" ", "").replaceAll("\\.", "").toCharArray();
 		
 		StringBuilder prefixBinaryNet = new StringBuilder();
 		// int numFullOctets = getNumberOfOctetcsFullInDefaltMask(ipClass);
@@ -308,80 +367,47 @@ public class IpCalculator{
 		// Agora podemos calcular os hosts e colocar o início e o fim nos hosts.
 		
 		/* Encontramos o número da maior subrede, para podermos iterar transformando em binário e colocando na currentSubnet */
+		// TODO: Trocar este bloco por uma concatenação com getXchars();
 		StringBuilder justToFindMaxSubnet = new StringBuilder();
 		int maxSubnet;
 		while(justToFindMaxSubnet.length() < bitsForSubnet){
 			justToFindMaxSubnet.append('1');
 		}
+		
+		maxSubnet = Integer.parseInt(justToFindMaxSubnet.toString(), 2) +1; //+1 para contar a subnet 0 também
 
-		maxSubnet = Integer.parseInt(justToFindMaxSubnet.toString());
-
+//		System.out.println("maxSubnet: " + maxSubnet);
 
 		StringBuilder currentIpNet = new StringBuilder();
-		StringBuilder currentBroadcast = new StringBuilder();
 
 		int currentNumberSubnet = 0;
-		while(currentNumberSubnet <= maxSubnet){
+		do {
 			// Unimos a Rede com a Subrede - Faltam os hosts
 			currentIpNet.append(binaryPrefix); // Prefixo de rede
+//			System.out.println("PREFIXO NET " + currentIpNet);
+			
+			currentIpNet.append(" ");
 			currentIpNet.append(zerosAEsquerdaRecursivo(Integer.toBinaryString(currentNumberSubnet), bitsForSubnet)); // Subrede atual com zeros a esquerda
+//			System.out.println("CURRENT NET + SUBNET " + currentIpNet);
+			// Nesta linha tempos o prefixo de NET + SUBNET, restando apenas os hosts 
+			
 
-			String start = currentIpNet.toString() + zerosAEsquerdaRecursivo("0", bitsForHosts); // Primeiro host
-			String end = currentIpNet.toString() + zerosAEsquerdaRecursivo("1", bitsForHosts); // Ultimo host
+			String start = currentIpNet.toString() + getXchars('0', bitsForHosts); // Primeiro host // Como já esa dando o primeiro dígito, -1
+//			System.out.println("START " + start);
+			
+			String end = currentIpNet.toString() + getXchars('1', bitsForHosts); // Ultimo host 
 
+//			System.out.println("END " + end);
 			String dotedStart = putDotsInBinaryUndotedIp(start);
 			String dotedEnd = putDotsInBinaryUndotedIp(end);
 
-			// TODO - PROBLEMA
-			// Aqui temos uma string SEM PONTO, precisamos coloar pontos, 
-			// chamar o getOctets para então adicionar
-			
 			// Adicionar na lista
-			ipRages.addRage(divideOctets(dotedStart), divideOctets(dotedEnd));
+			ipRages.addRage(binaryToDecimalIp(dotedStart), binaryToDecimalIp(dotedEnd));
 			currentIpNet = new StringBuilder();
-			currentBroadcast = new StringBuilder();
-		}
+		} while(++currentNumberSubnet < maxSubnet);
 
-		return String.valueOf(prefixBinaryNet.length());
+		return ipRages;
 		
-		
-//		JEITO COMPLICADO, COM WHILE JÁ FIZ COMPLETO
-//		/* Iteração para pegar o prefixo binário de rede na StringBuilder */
-//		for (int i = 0; i < prefixNet.length; i++){
-//			if(i >= numFullOctets)
-//				break;
-//				
-//			prefixNet[i] = ipNet[i] & defaultMask[i];
-//			prefixBinaryNet.append(Long.toBinaryString(prefixNet[i]));
-//		}
-		
-		
-//		String currentSubnet = "";
-//		
-//		
-//		
-////		int numSubnets = calculateNumOfSubnets(mask);
-////		int hostsForEachSubnet =  calculateNumOfHostsForEachSubnet(dotedMask);
-////		int numOfBitsSubnet = numBitsOfMaskForSubnet(dotedMask);
-//		
-//		String prefixBinaryIp = zerosAEsquerdaRecursivo(dotedBinaryIp.substring(numOfBitsSubnet));
-//		long[] prefixIp = binaryToDecimalIp(prefixBinaryIp);
-//		
-//		
-//		long[] host = {};
-//		
-//		long[] ip = binaryToDecimalIp(dotedBinaryIp);
-//		
-//		long[] currentStart = {};
-//		long[] currentEnd = {};
-//		
-//		while (numSubnets-- > 0){
-//		// for (int i = numSubnets; i >= 0; i--){
-//			ipRages.addRage(currentStart, currentEnd);
-//			currentStart += hosts;
-//			currentEnd += hosts;
-//		}
-//		return ipRages;
 	}
 	
 	
@@ -398,7 +424,7 @@ public class IpCalculator{
 
 	private static int getNumOfBitsForHost(int numDesiredHosts){
 		int i = 1;
-		while(((int) Math.pow(2, i)) < numDesiredHosts)
+		while(((int) Math.pow(2, ++i)) < numDesiredHosts)
 			i++;
 		// TODO: Tentar colocar uma linha só, tudo dentro do while com i++
 
@@ -411,6 +437,7 @@ public class IpCalculator{
 	 * @return           [description]
 	 */
 	private static String putDotsInBinaryUndotedIp(String undotedIp){
+		undotedIp = undotedIp.trim().replace(" ", "");
 		int start = 0;
 		int end = 8;
 		StringBuilder dotedIp = new StringBuilder();
@@ -448,12 +475,14 @@ public class IpCalculator{
 		long[] mask = {255,255,254,0};
 //		System.out.println(ip.calculateIpRages(ipNet, mask));
 		
-		long[] prefixNet = new long[4];
+//		long[] prefixNet = new long[4];
 //		String binaryNet = decimalToBinaryDotedIp(ipNet).replace("\\.", "");
 		
-		System.out.println(new IpCalculator().calculateIpRages(ipNet, mask));
+		System.out.println(new IpCalculator().calculateIpRages(ipNet, mask, 4, 258));
 		
-		
+		// Que loko! Operadores unários, + ou - ante da variável, muda o sinal dela mesmo hehe
+//		int i = 80;
+//		System.out.println((-+i));
 //		for (int i = 0; i < prefixNet.length; i++){
 //			prefixNet[i] = ipNet[i] & mask[i];
 //			System.out.println(prefixNet[i]);
@@ -608,7 +637,7 @@ public class IpCalculator{
 	 */
 	public int calculateNumOfSubnets(String binaryMask){
 		return (int) Math.pow(2, binaryMask
-			.trim()
+			.trim().replaceAll(" ", "")
 			.replace(".", "")
 			.replace("1","")
 			.length()) -2; // Tira broadcast e rede do calculo
@@ -640,6 +669,23 @@ public class IpCalculator{
 			return zerosAEsquerdaRecursivo("0" + s, tamanhoDesejado);
 	}
 	
+	/**
+	 * Função que devolve uma string com a quantidade x de chars c recebido
+	 * Exeplo:
+	 * getXChars(4, 'b') -> "bbbb"
+	 * @param c
+	 * @param x
+	 * @return
+	 */
+	private String getXchars(char c, int x){
+		StringBuilder zeros = new StringBuilder();
+	
+		while(zeros.length() < x){
+			zeros.append(c);
+		}
+		return zeros.toString();
+	}
+	
 	
 	/**
 	 * Transform decimal given IP to binary IP
@@ -668,7 +714,8 @@ public class IpCalculator{
 	 * @return
 	 */
 	public static long[] binaryToDecimalIp(String dotedBinaryIp){
-		String[] binaryOctets = dotedBinaryIp.trim().split("\\.");
+//		System.out.println(dotedBinaryIp.trim().replaceAll(" ", ""));
+		String[] binaryOctets = dotedBinaryIp.trim().replaceAll(" ", "").split("\\.");
 		long[] decimalOctets = new long[binaryOctets.length];
 		for (int i = 0; i < binaryOctets.length; i++) {
 			decimalOctets[i] = Long.parseLong(binaryOctets[i], 2);
@@ -686,7 +733,7 @@ public class IpCalculator{
 	 * @return long[] array de long
 	 */
 	public static long[] divideOctets(String dotedDecimalIp){
-		String[] ipOctetsString = dotedDecimalIp.trim().split("\\.");
+		String[] ipOctetsString = dotedDecimalIp.trim().replaceAll(" ", "").split("\\.");
 		long[] ipOctets = new long[ipOctetsString.length];
 		for (int i = 0; i < ipOctetsString.length; i++) {
 			ipOctets[i] = Long.parseLong(ipOctetsString[i]);
@@ -711,7 +758,7 @@ public class IpCalculator{
 	 * @return bytesUsed 
 	 */
 	public static int numBitsOfMaskForSubnet(String dotedMask){
-		String unDotedMask = dotedMask.trim().replace(".", "");
+		String unDotedMask = dotedMask.trim().replaceAll(" ", "").replace(".", "");
 		return unDotedMask.length() - unDotedMask.replace("1", "").length();
 	}
 	
@@ -723,7 +770,7 @@ public class IpCalculator{
 	 * @return
 	 */
 	public static int calculateNumOfHostsForEachSubnet(String dotedMask){
-		String unDotedMask = dotedMask.trim().replace(".", "");
+		String unDotedMask = dotedMask.trim().replaceAll(" ", "").replace(".", "");
 		return (int) Math.pow(2, unDotedMask.length() - 
 				numBitsOfMaskForSubnet(dotedMask)) -2; // Broadcast e Rede
 	}
