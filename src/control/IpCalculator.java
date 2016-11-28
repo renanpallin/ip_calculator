@@ -31,7 +31,7 @@ public class IpCalculator{
 	 * getFirstAndLastHosts
 	 * 
 	 */
-	class IpRages{
+	public class IpRages{
 		private List<IpRage> rages;
 		private long[] mask;
 		
@@ -87,11 +87,14 @@ public class IpCalculator{
 			StringBuilder sb = new StringBuilder();
 			sb.append("IpRages | Mask: ");
 			
-			String ponto = "";
-			for(long l: mask){
-				sb.append(ponto);
-				sb.append(l);
-				ponto = ".";
+			
+			if(mask != null){
+				String ponto = "";
+				for(long l: mask){
+					sb.append(ponto);
+					sb.append(l);
+					ponto = ".";
+				}				
 			}
 			
 			sb.append('\n');
@@ -255,20 +258,18 @@ public class IpCalculator{
 	public static int getNumberOfOctetcsFullInDefaltMask(char ipClass){
 		// O findIpClass retorna o char 0 caso seja um IP reservado
 		// ou tenha algum erro
-		if(ipClass == '0')
-			return 0;
-		
-		int numOctectsFull = 0;
+//		if(ipClass == '0')
+//			return 0;
 		
 		if(ipClass == 'A'){
-			numOctectsFull = 1;
+			return 1;
 		} else if(ipClass == 'B'){
-			numOctectsFull = 2;
+			return 2;
 		} else if(ipClass == 'C'){
-			numOctectsFull = 3;
+			return 3;
 		}
-
-		return numOctectsFull;
+		
+		return 0;
 	}
 
 	/**
@@ -319,15 +320,8 @@ public class IpCalculator{
 	 * Calculate all the rages of Ip of the given mask
 	 * @return [description]
 	 */
-	// TODO: Colocar o prefixo da subtede baseado para os ips de rage
-	// TODO: Resolver problema "Como colocar a máscara nesse objeto?",
-	// para isto, trocar parâmetro do método pela mascara completa
-	//
-	// 
-	//TODO: MÉTODO TODO ERRADO! CONSERTAR ************************************************************************
-	private IpRages calculateIpRages(long[] ipNet, long[] mask, int numDesiredSubnets, int numDesiredHosts){
+	public IpRages calculateIpRages(long[] ipNet, int numDesiredSubnets, int numDesiredHosts){
 		IpRages ipRages = new IpRages();
-		ipRages.setMask(mask);
 
 //		char ipClass = IpCalculator.findIpClass(ipNet);
 //		long[] defaultMask = IpCalculator.getDefaultMask(ipClass);
@@ -337,6 +331,9 @@ public class IpCalculator{
 		/* Pega a diferença entre o usado para rede do totao, resultando  o usado para rede */
 		int bitsForSubnet = getNumOfBitsForSubnet(numDesiredSubnets);
 		int bitsForHosts = getNumOfBitsForHost(numDesiredHosts);
+		System.out.println("bitsForSubnet : " + bitsForSubnet);
+		System.out.println("bitsForHosts : " + bitsForHosts);
+		
 
 		int bitsNetPrefix = 32 - (bitsForSubnet + bitsForHosts);
 		
@@ -344,27 +341,42 @@ public class IpCalculator{
 		/* todos os bits que não são hosts */
 		// int numBitsOfPrefixNet = bitsForNet + bitsForSubnet;
 		
-		int numOfSubnets = (int) Math.pow(2, bitsForSubnet);
+//		int numOfSubnets = (int) Math.pow(2, bitsForSubnet);
 		
 		// long[] prefixNet = new long[4];
 		
 		// Aqui podemos substituir o char[] e o while por uma String e utilizar substring (tira) OU 
 		// por um StrinBuffer, limitando o tamanho dela para o bitsNetPrefix
-		char[] binaryNet = decimalToBinaryDotedIp(ipNet).trim().replaceAll(" ", "").replaceAll("\\.", "").toCharArray();
+//		char[] binaryNet = decimalToBinaryDotedIp(ipNet).trim().replaceAll(" ", "").replaceAll("\\.", "").toCharArray();
 		
-		StringBuilder prefixBinaryNet = new StringBuilder();
+//		StringBuilder prefixBinaryNet = new StringBuilder();
 		// int numFullOctets = getNumberOfOctetcsFullInDefaltMask(ipClass);
 
-		int i = 0;
-		while(prefixBinaryNet.length() <= bitsNetPrefix){
-			prefixBinaryNet.append(binaryNet[i]);
-			i++;
-		}
+//		int i = 0;
+//		while(prefixBinaryNet.length() <= bitsNetPrefix){
+//			prefixBinaryNet.append(binaryNet[i]);
+//			i++;
+//		}
 
 		/* Passando o prefixo para uma String final, para não ser alterada */
-		final String binaryPrefix = prefixBinaryNet.toString();
+//		final String binaryPrefix = prefixBinaryNet.toString();
+		final String binaryPrefix = decimalToBinaryDotedIp(ipNet).trim().replaceAll(" ", "")
+				.replaceAll("\\.", "").substring(0, bitsNetPrefix);
+		
 		// Neste ponto temos o prefixo no tamanho correto e conehcemos os bits que usaremos para net e hosts.
 		// Agora podemos calcular os hosts e colocar o início e o fim nos hosts.
+		
+		System.out.println("binaryPrefix : " + binaryPrefix);
+//		System.out.println(binaryPrefix.length() + bitsForSubnet);
+//		System.out.println(32 - bitsForHosts);
+		
+		int bitsTrueInMask = 32 - bitsForHosts;
+//		int bitsTrueInMask = binaryPrefix.length() + bitsForSubnet;
+		System.out.println("bitsTrueInMask: " + bitsTrueInMask);
+		String binaryMask = getXchars('1', bitsTrueInMask) + getXchars('0', 32 - bitsTrueInMask );
+		System.out.println("BINARYMASK: " + binaryMask);
+		long[] mask = binaryToDecimalIp(putDotsInBinaryUndotedIp(binaryMask));
+		ipRages.setMask(mask);
 		
 		/* Encontramos o número da maior subrede, para podermos iterar transformando em binário e colocando na currentSubnet */
 		// TODO: Trocar este bloco por uma concatenação com getXchars();
@@ -376,7 +388,7 @@ public class IpCalculator{
 		
 		maxSubnet = Integer.parseInt(justToFindMaxSubnet.toString(), 2) +1; //+1 para contar a subnet 0 também
 
-//		System.out.println("maxSubnet: " + maxSubnet);
+		System.out.println("maxSubnet: " + maxSubnet);
 
 		StringBuilder currentIpNet = new StringBuilder();
 
@@ -386,10 +398,10 @@ public class IpCalculator{
 			currentIpNet.append(binaryPrefix); // Prefixo de rede
 //			System.out.println("PREFIXO NET " + currentIpNet);
 			
-			currentIpNet.append(" ");
+//			currentIpNet.append(" ");
 			currentIpNet.append(zerosAEsquerdaRecursivo(Integer.toBinaryString(currentNumberSubnet), bitsForSubnet)); // Subrede atual com zeros a esquerda
 //			System.out.println("CURRENT NET + SUBNET " + currentIpNet);
-			// Nesta linha tempos o prefixo de NET + SUBNET, restando apenas os hosts 
+			// Nesta linha tempos o prefixo de NET + SUBNET, restando apenas os hosts (AQUI ESTÁ A MÁSCARA) 
 			
 
 			String start = currentIpNet.toString() + getXchars('0', bitsForHosts); // Primeiro host // Como já esa dando o primeiro dígito, -1
@@ -415,18 +427,14 @@ public class IpCalculator{
 	
 	private static int getNumOfBitsForSubnet(int numDesiredSubnets){
 		int i = 0;
-		while((((int) Math.pow(2, i))-2) < numDesiredSubnets) // -2 (broadcast e subnet)
-			i++;
-		// TODO: Tentar colocar uma linha só, tudo dentro do while com i++
+		while((((int) Math.pow(2, ++i))-2) < numDesiredSubnets);
 
 		return i;
 	}
 
 	private static int getNumOfBitsForHost(int numDesiredHosts){
 		int i = 1;
-		while(((int) Math.pow(2, ++i)) < numDesiredHosts)
-			i++;
-		// TODO: Tentar colocar uma linha só, tudo dentro do while com i++
+		while((((int) Math.pow(2, ++i))-2) < numDesiredHosts); // -2 (broadcast e subnet)
 
 		return i;
 	}
@@ -468,27 +476,36 @@ public class IpCalculator{
 //		return ipRages;
 //	}
 	
-	public static void main(String[] args) {
-		IpCalculator ip = new IpCalculator();
-		
-		long[] ipNet = {191,110,38,0};
-		long[] mask = {255,255,254,0};
-//		System.out.println(ip.calculateIpRages(ipNet, mask));
-		
-//		long[] prefixNet = new long[4];
-//		String binaryNet = decimalToBinaryDotedIp(ipNet).replace("\\.", "");
-		
-		System.out.println(new IpCalculator().calculateIpRages(ipNet, mask, 4, 258));
-		
-		// Que loko! Operadores unários, + ou - ante da variável, muda o sinal dela mesmo hehe
-//		int i = 80;
-//		System.out.println((-+i));
-//		for (int i = 0; i < prefixNet.length; i++){
-//			prefixNet[i] = ipNet[i] & mask[i];
-//			System.out.println(prefixNet[i]);
-//		}
-		
-	}
+//	public static void main(String[] args) {
+//		IpCalculator ip = new IpCalculator();
+//		
+////		long[] ipNet = {191,110,38,0};
+//		long[] ipNet = {172,16,0,0};
+//		
+//		int subnets = 4;
+//		int hosts = 100;
+//
+//		
+////		long[] mask = {255,255,254,0};
+////		System.out.println(ip.calculateIpRages(ipNet, mask));
+//		
+////		long[] prefixNet = new long[4];
+////		String binaryNet = decimalToBinaryDotedIp(ipNet).replace("\\.", "");
+//		
+////		System.out.println(Math.pow(2, 12));
+//		
+////		System.out.println(new IpCalculator().calculateIpRages(ipNet, 4, 258));
+//		System.out.println(new IpCalculator().calculateIpRages(ipNet, subnets, hosts).getFirstAndLastHosts());
+//		
+//		// Que loko! Operadores unários, + ou - ante da variável, muda o sinal dela mesmo hehe
+////		int i = 80;
+////		System.out.println((-+i));
+////		for (int i = 0; i < prefixNet.length; i++){
+////			prefixNet[i] = ipNet[i] & mask[i];
+////			System.out.println(prefixNet[i]);
+////		}
+//		
+//	}
 	
 /* END - Funções de cálculo de rede */
 
