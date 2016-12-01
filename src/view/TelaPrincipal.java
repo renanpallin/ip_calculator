@@ -1,31 +1,21 @@
 package view;
 
-import java.awt.Dimension;
+import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
-
-import control.IpCalculator;
 
 public class TelaPrincipal {
-	
+
 	private JFrame frame;
 	private JPanel panel;
-	private JTextField tfIp;
-	private JTextField tfSubnet;
-	private JTextField tfHost;
-	private JButton btnCalculate;
-	private JTextArea console;
 	
-	
-	private IpCalculator ipCalculator;
-	
+	private JButton btnDivideSubredes;
+	private JButton btnConvercoes;
+	private JButton btnIpClass;
 	
 	public static void main(String[] args) {
 		new TelaPrincipal();
@@ -33,50 +23,40 @@ public class TelaPrincipal {
 	
 	public TelaPrincipal(){
 		frame = new JFrame();
-		frame.setSize(800, 200);
-		frame.setTitle("Ip Calculator");
+		frame.setSize(800, 150);
+		frame.setTitle("Calculadorinha IP");
 		
-		panel = new JPanel();
-		panel.setLayout(new GridLayout(3, 1));
+		btnDivideSubredes = new JButton("Dividir Subredes");
+		btnConvercoes = new JButton("Converções");
+		btnIpClass = new JButton("Classes IP");
 		
-		tfIp = new JTextField();
-		tfSubnet = new JTextField();
-		tfHost = new JTextField();
-		
-		tfIp.setText("IP");
-		tfSubnet.setText("subnet");
-		tfHost.setText("hosts");
-		
-		console = new JTextArea();
-		console.setEditable(false);
-		
-		ipCalculator = new IpCalculator();
-		
-		btnCalculate = new JButton("Calculate");
-		btnCalculate.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				long [] ipNet = IpCalculator.divideOctets(tfIp.getText());
-				int numDesiredSubnets = Integer.parseInt(tfSubnet.getText());
-				int numDesiredHosts = Integer.parseInt(tfHost.getText());
-				
-				String result = ipCalculator.calculateIpRages(ipNet, numDesiredSubnets, numDesiredHosts).toString();
-				console.setText(result);
-			}
+		btnDivideSubredes.addActionListener( e -> {
+			new TelaRages();
 		});
 		
+		btnConvercoes.addActionListener( e ->  {
+			new TelaConvercoes();
+		});
+		
+		btnIpClass.addActionListener( e -> {
+			new TelaClasseIp();
+		});
+		
+		JPanel buttonsPanel = new JPanel();
+		buttonsPanel.setLayout(new GridLayout());
+		buttonsPanel.add(btnDivideSubredes);
+		buttonsPanel.add(btnConvercoes);
+		buttonsPanel.add(btnIpClass);
+		
+		JTextArea textArea = new JTextArea();
+		textArea.setEditable(false);
+		textArea.setText("Calculadora IP!!! \nOlá. Escolha sua opção abaixo e uma tela se abrirá. \n\n\nAutor: Renan Pallin de Azevedo\nRA:141033-4");
 		
 		
-		JPanel ipPanel = new JPanel();
-		ipPanel.setLayout(new GridLayout(1, 3));
-		ipPanel.add(tfSubnet);
-		ipPanel.add(tfHost);
-		ipPanel.add(btnCalculate);
-		
-		panel.add(tfIp);
-		panel.add(ipPanel);
-		panel.add(console);
+		panel = new JPanel();
+		panel.setLayout(new BorderLayout());
+		panel.add(textArea, BorderLayout.CENTER);
+		panel.add(buttonsPanel, BorderLayout.SOUTH);
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);

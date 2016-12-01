@@ -87,7 +87,6 @@ public class IpCalculator{
 			StringBuilder sb = new StringBuilder();
 			sb.append("IpRages | Mask: ");
 			
-			
 			if(mask != null){
 				String ponto = "";
 				for(long l: mask){
@@ -99,6 +98,7 @@ public class IpCalculator{
 			
 			sb.append('\n');
 			
+			sb.append("    Sub-rede    ~     Broadcast" + "\n");
 			for(IpRage rage: rages)
 				sb.append(rage + "\n");
 			
