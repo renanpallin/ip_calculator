@@ -27,7 +27,7 @@ public class TelaPrincipal {
 		frame.setTitle("Calculadorinha IP");
 		
 		btnDivideSubredes = new JButton("Dividir Subredes");
-		btnConvercoes = new JButton("Converções");
+		btnConvercoes = new JButton("Conversões");
 		btnIpClass = new JButton("Classes IP");
 		
 		btnDivideSubredes.addActionListener( e -> {

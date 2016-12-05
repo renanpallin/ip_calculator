@@ -29,7 +29,7 @@ public class TelaConvercoes {
 	public TelaConvercoes(){
 		frame = new JFrame();
 		frame.setSize(800, 150);
-		frame.setTitle("Converções");
+		frame.setTitle("Conversões");
 		
 		JLabel lblDecimalIp = new JLabel("IP Decimal : ");
 		tfDecimalIp = new JTextField();
